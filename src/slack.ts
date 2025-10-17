@@ -24,22 +24,22 @@ export class Block {
   public static getBaseField(): MrkdwnElement[] {
     const {owner, repo} = context.repo;
     const url = github.getWorkflowUrls();
-    const eventText = url.event
-      ? `<${url.event}|${context.eventName}>`
-      : context.eventName;
+    // const eventText = url.event
+    //   ? `<${url.event}|${context.eventName}>`
+    //   : context.eventName;
     return [
       {
         type: 'mrkdwn',
         text: `*repository*: <${url.repo}|${owner}/${repo}>`
       },
-      {
-        type: 'mrkdwn',
-        text: `*ref*: ${context.ref}`
-      },
-      {
-        type: 'mrkdwn',
-        text: `*event name*: ${eventText}`
-      },
+      // {
+      //   type: 'mrkdwn',
+      //   text: `*ref*: ${context.ref}`
+      // },
+      // {
+      //   type: 'mrkdwn',
+      //   text: `*event name*: ${eventText}`
+      // },
       {
         type: 'mrkdwn',
         text: `*workflow*: <${url.action}|${context.workflow}>`
