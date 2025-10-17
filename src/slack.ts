@@ -30,19 +30,19 @@ export class Block {
     return [
       {
         type: 'mrkdwn',
-        text: `*repository*\n<${url.repo}|${owner}/${repo}>`
+        text: `*repository*: <${url.repo}|${owner}/${repo}>`
       },
       {
         type: 'mrkdwn',
-        text: `*ref*\n${context.ref}`
+        text: `*ref*: ${context.ref}`
       },
       {
         type: 'mrkdwn',
-        text: `*event name*\n${eventText}`
+        text: `*event name*: ${eventText}`
       },
       {
         type: 'mrkdwn',
-        text: `*workflow*\n<${url.action}|${context.workflow}>`
+        text: `*workflow*: <${url.action}|${context.workflow}>`
       }
     ];
   }
@@ -53,7 +53,7 @@ export class Block {
     const field: MrkdwnElement[] = [
       {
         type: 'mrkdwn',
-        text: `*commit*\n<${commitUrl}|${commitMsg}>`
+        text: `*commit*: <${commitUrl}|${commitMsg}>`
       }
     ];
 
@@ -61,7 +61,7 @@ export class Block {
     if (author) {
       field.push({
         type: 'mrkdwn',
-        text: `*author*\n<${author.url}|${author.name}>`
+        text: `*author*: <${author.url}|${author.name}>`
       });
     }
 
