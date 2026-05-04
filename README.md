@@ -22,6 +22,7 @@ Please use moia-oss/slatify action.
 - [Inputs](#inputs)
 - [Examples](#examples)
   - [Basic usage](#basic-usage)
+  - [Multiple webhooks](#multiple-webhooks)
   - [Includes the latest commit information](#includes-the-latest-commit-information)
 - [Slack UI](#slack-ui)
 - [LICENSE](#license)
@@ -48,7 +49,8 @@ You can customize the following parameters:
 |:--:|:--:|:--|:--|
 |type|required|N/A|The result of GitHub Actions job<br>This parameter value must contain the following word:<br>- `success`<br>- `failure`<br>- `cancelled`<br>We recommend using ${{ job.status }}|
 |job_name|required|N/A|Means slack notification title|
-|url|required (or `slack_bot_token`)|N/A|Slack Incoming Webhooks URL<br>Please specify this key or SLACK_WEBHOOK environment variable<br>※SLACK_WEBHOOK will be deprecated|
+|url|required (or `urls` or `slack_bot_token`)|N/A|Slack Incoming Webhooks URL<br>Please specify this key or SLACK_WEBHOOK environment variable<br>※SLACK_WEBHOOK will be deprecated|
+|urls|required (or `url` or `slack_bot_token`)|N/A|Slack Incoming Webhooks URLs (newline-separated)<br>Takes precedence over `url`. Use this to send the same notification to multiple webhooks.|
 |slack_bot_token|required (or `url`)|N/A|Slack Bot Token<br>Please specify this key or SLACK_BOT_TOKEN environment variable
 |mention|optional|N/A|Slack message mention|
 |mention_if|optional|N/A|The condition to mention<br>This parameter can contain the following word:<br>- `success`<br>- `failure`<br>- `cancelled`<br>- `always`|
@@ -73,6 +75,20 @@ Please refer to [action.yml](./action.yml) for more details.
     job_name: '*Test*'
     channel: '#random'
     url: ${{ secrets.SLACK_WEBHOOK }}
+```
+
+### Multiple webhooks
+
+```..github/workflows/example3.yml
+- name: Slack Notification
+  uses: moia-oss/slatify@master
+  if: always()
+  with:
+    type: ${{ job.status }}
+    job_name: '*Deploy*'
+    urls: |
+      ${{ secrets.SLACK_WEBHOOK_TEAM_A }}
+      ${{ secrets.SLACK_WEBHOOK_TEAM_B }}
 ```
 
 ### Includes the latest commit information

@@ -246,6 +246,80 @@ describe('Webhook Payload Tests', () => {
   });
 });
 
+describe('Multiple Webhook Tests', () => {
+  const baseUrl = 'https://this.is.test';
+  const payload = JSON.parse(
+    fs.readFileSync(path.join(__dirname, 'payload.json'), {encoding: 'utf8'})
+  );
+
+  test('Post to multiple webhooks successfully', async () => {
+    nock(baseUrl).post('/webhook1').reply(200, 'ok');
+    nock(baseUrl).post('/webhook2').reply(200, 'ok');
+    nock(baseUrl).post('/webhook3').reply(200, 'ok');
+
+    const urls = [
+      `${baseUrl}/webhook1`,
+      `${baseUrl}/webhook2`,
+      `${baseUrl}/webhook3`
+    ];
+
+    const res = await Slack.notifyMultipleWebhooks(
+      urls,
+      'moia-oss',
+      'test',
+      'pray',
+      payload
+    );
+    expect(res).toBe(undefined);
+  });
+
+  test('Single URL works (backward compatibility)', async () => {
+    nock(baseUrl).post('/single').reply(200, 'ok');
+
+    const urls = [`${baseUrl}/single`];
+
+    const res = await Slack.notifyMultipleWebhooks(
+      urls,
+      'moia-oss',
+      'test',
+      'pray',
+      payload
+    );
+    expect(res).toBe(undefined);
+  });
+
+  test('Partial failure - attempts all URLs and reports errors', async () => {
+    nock(baseUrl).post('/success1').reply(200, 'ok');
+    nock(baseUrl).post('/failure1').reply(404, {error: 'channel_not_found'});
+    nock(baseUrl).post('/success2').reply(200, 'ok');
+
+    const urls = [
+      `${baseUrl}/success1`,
+      `${baseUrl}/failure1`,
+      `${baseUrl}/success2`
+    ];
+
+    await expect(
+      Slack.notifyMultipleWebhooks(urls, 'moia-oss', 'test', 'pray', payload)
+    ).rejects.toThrow(
+      'Failed to post message to 1 of 3 Slack webhook(s)'
+    );
+  });
+
+  test('All URLs fail', async () => {
+    nock(baseUrl).post('/fail1').reply(500, 'error');
+    nock(baseUrl).post('/fail2').reply(500, 'error');
+
+    const urls = [`${baseUrl}/fail1`, `${baseUrl}/fail2`];
+
+    await expect(
+      Slack.notifyMultipleWebhooks(urls, 'moia-oss', 'test', 'pray', payload)
+    ).rejects.toThrow(
+      'Failed to post message to 2 of 2 Slack webhook(s)'
+    );
+  });
+});
+
 describe('Post Message Tests', () => {
   const baseUrl = 'https://this.is.test';
   const payload = JSON.parse(

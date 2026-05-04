@@ -20,3 +20,10 @@ export function validateStatus(jobStatus: string): string {
 export function isValidCondition(condition: string): boolean {
   return isValid(condition, metionConditions);
 }
+
+export function parseUrls(input: string): string[] {
+  return input
+    .split(/[\n,]/)
+    .map(url => url.trim())
+    .filter(url => url.length > 0);
+}

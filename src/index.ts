@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from './github';
-import {validateStatus, isValidCondition} from './utils';
+import {validateStatus, isValidCondition, parseUrls} from './utils';
 import {Slack} from './slack';
 
 async function run() {
@@ -9,6 +9,8 @@ async function run() {
   );
   const jobName = core.getInput('job_name', {required: true});
   const url = process.env.SLACK_WEBHOOK || core.getInput('url');
+  const urlsInput = core.getInput('urls');
+  const urls = urlsInput ? parseUrls(urlsInput) : [];
   const slackBotToken =
     process.env.SLACK_BOT_TOKEN || core.getInput('slack_bot_token');
   let mention = core.getInput('mention');
@@ -27,10 +29,10 @@ async function run() {
       `);
   }
 
-  if (!url && !slackBotToken) {
+  if (!url && urls.length === 0 && !slackBotToken) {
     throw new Error(`Missing Slack Incoming Webhooks URL or Slack Bot Token.
       To use incoming webhooks please configure "SLACK_WEBHOOK" as an environment variable or
-      specify the "url" key.
+      specify the "url" or "urls" key.
 
       To use web api please configure "SLACK_BOT_TOKEN" as an environment variable or
       specify the "slack_bot_token" key.
@@ -42,7 +44,21 @@ async function run() {
     commit = await github.getCommit(token);
   }
 
-  if (url) {
+  if (urls.length > 0) {
+    const payload = Slack.generateWebhookPayload(
+      jobName,
+      status,
+      mention,
+      mentionCondition,
+      commit
+    );
+    core.debug(
+      `Generated payload for slack webhooks: ${JSON.stringify(payload)}`
+    );
+
+    await Slack.notifyMultipleWebhooks(urls, username, channel, icon_emoji, payload);
+    core.info(`Posted message to ${urls.length} Slack webhook(s)`);
+  } else if (url) {
     const payload = Slack.generateWebhookPayload(
       jobName,
       status,
