@@ -10,7 +10,12 @@ async function run() {
   const jobName = core.getInput('job_name', {required: true});
   const url = process.env.SLACK_WEBHOOK || core.getInput('url');
   const urlsInput = core.getInput('urls');
-  const urls = urlsInput ? parseUrls(urlsInput) : [];
+  const webhookUrls = urlsInput ? parseUrls(urlsInput) : [];
+  if (webhookUrls.length > 0 && url) {
+    core.warning('"urls" takes precedence over "url"');
+  } else if (url) {
+    webhookUrls.push(url);
+  }
   const slackBotToken =
     process.env.SLACK_BOT_TOKEN || core.getInput('slack_bot_token');
   let mention = core.getInput('mention');
@@ -29,7 +34,7 @@ async function run() {
       `);
   }
 
-  if (!url && urls.length === 0 && !slackBotToken) {
+  if (webhookUrls.length === 0 && !slackBotToken) {
     throw new Error(`Missing Slack Incoming Webhooks URL or Slack Bot Token.
       To use incoming webhooks please configure "SLACK_WEBHOOK" as an environment variable or
       specify the "url" or "urls" key.
@@ -44,7 +49,7 @@ async function run() {
     commit = await github.getCommit(token);
   }
 
-  if (urls.length > 0) {
+  if (webhookUrls.length > 0) {
     const payload = Slack.generateWebhookPayload(
       jobName,
       status,
@@ -52,26 +57,10 @@ async function run() {
       mentionCondition,
       commit
     );
-    core.debug(
-      `Generated payload for slack webhooks: ${JSON.stringify(payload)}`
-    );
+    core.debug(`Generated payload for slack webhook(s): ${JSON.stringify(payload)}`);
 
-    await Slack.notifyMultipleWebhooks(urls, username, channel, icon_emoji, payload);
-    core.info(`Posted message to ${urls.length} Slack webhook(s)`);
-  } else if (url) {
-    const payload = Slack.generateWebhookPayload(
-      jobName,
-      status,
-      mention,
-      mentionCondition,
-      commit
-    );
-    core.debug(
-      `Generated payload for slack webhook: ${JSON.stringify(payload)}`
-    );
-
-    await Slack.notifyWebhook(url, username, channel, icon_emoji, payload);
-    core.info('Post message to Slack Webhook');
+    await Slack.notifyMultipleWebhooks(webhookUrls, username, channel, icon_emoji, payload);
+    core.info(`Posted message to ${webhookUrls.length} Slack webhook(s)`);
   } else if (slackBotToken) {
     const payload = Slack.generateApiPayload(
       username,
