@@ -188,16 +188,17 @@ export class Slack {
       )
     );
 
-    const failures = results.filter(
-      (r): r is PromiseRejectedResult => r.status === 'rejected'
-    );
-
-    if (failures.length > 0) {
-      for (const f of failures) {
+    const failures: {index: number; reason: unknown}[] = [];
+    results.forEach((r, index) => {
+      if (r.status === 'rejected') {
+        failures.push({index, reason: r.reason});
         core.error(
-          `Webhook delivery failed: ${f.reason?.message || String(f.reason)}`
+          `Webhook ${index + 1}/${urls.length} delivery failed: ${r.reason?.message || String(r.reason)}`
         );
       }
+    });
+
+    if (failures.length > 0) {
       throw new Error(
         `Failed to post message to ${failures.length} of ${urls.length} Slack webhook(s)`
       );
