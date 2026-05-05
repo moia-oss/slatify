@@ -301,9 +301,7 @@ describe('Multiple Webhook Tests', () => {
 
     await expect(
       Slack.notifyMultipleWebhooks(urls, 'moia-oss', 'test', 'pray', payload)
-    ).rejects.toThrow(
-      'Failed to post message to 1 of 3 Slack webhook(s)'
-    );
+    ).rejects.toThrow('Failed to post message to 1 of 3 Slack webhook(s)');
   });
 
   test('All URLs fail', async () => {
@@ -314,9 +312,7 @@ describe('Multiple Webhook Tests', () => {
 
     await expect(
       Slack.notifyMultipleWebhooks(urls, 'moia-oss', 'test', 'pray', payload)
-    ).rejects.toThrow(
-      'Failed to post message to 2 of 2 Slack webhook(s)'
-    );
+    ).rejects.toThrow('Failed to post message to 2 of 2 Slack webhook(s)');
   });
 });
 

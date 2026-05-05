@@ -57,9 +57,17 @@ async function run() {
       mentionCondition,
       commit
     );
-    core.debug(`Generated payload for slack webhook(s): ${JSON.stringify(payload)}`);
+    core.debug(
+      `Generated payload for slack webhook(s): ${JSON.stringify(payload)}`
+    );
 
-    await Slack.notifyMultipleWebhooks(webhookUrls, username, channel, icon_emoji, payload);
+    await Slack.notifyMultipleWebhooks(
+      webhookUrls,
+      username,
+      channel,
+      icon_emoji,
+      payload
+    );
     core.info(`Posted message to ${webhookUrls.length} Slack webhook(s)`);
   } else if (slackBotToken) {
     const payload = Slack.generateApiPayload(
