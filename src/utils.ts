@@ -23,7 +23,7 @@ export function isValidCondition(condition: string): boolean {
 
 export function parseUrls(input: string): string[] {
   return input
-    .split(/[\n,]/)
+    .split('\n')
     .map(url => url.trim())
     .filter(url => url.length > 0);
 }

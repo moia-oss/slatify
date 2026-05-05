@@ -17,11 +17,10 @@ describe('parseUrls', () => {
     ]);
   });
 
-  test('Comma-separated URLs', () => {
-    const input = 'https://hook1.example.com,https://hook2.example.com';
+  test('Commas in URLs are preserved', () => {
+    const input = 'https://hook1.example.com/path?a=1,2,3';
     expect(parseUrls(input)).toEqual([
-      'https://hook1.example.com',
-      'https://hook2.example.com'
+      'https://hook1.example.com/path?a=1,2,3'
     ]);
   });
 
