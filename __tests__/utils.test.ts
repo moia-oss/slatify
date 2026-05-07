@@ -1,42 +1,4 @@
-import {parseUrls, validateStatus, isValidCondition} from '../src/utils';
-
-describe('parseUrls', () => {
-  test('Single URL', () => {
-    expect(parseUrls('https://hooks.slack.com/services/T00/B00/xxx')).toEqual([
-      'https://hooks.slack.com/services/T00/B00/xxx'
-    ]);
-  });
-
-  test('Newline-separated URLs', () => {
-    const input =
-      'https://hook1.example.com\nhttps://hook2.example.com\nhttps://hook3.example.com';
-    expect(parseUrls(input)).toEqual([
-      'https://hook1.example.com',
-      'https://hook2.example.com',
-      'https://hook3.example.com'
-    ]);
-  });
-
-  test('Commas in URLs are preserved', () => {
-    const input = 'https://hook1.example.com/path?a=1,2,3';
-    expect(parseUrls(input)).toEqual([
-      'https://hook1.example.com/path?a=1,2,3'
-    ]);
-  });
-
-  test('Handles whitespace and empty lines', () => {
-    const input =
-      '  https://hook1.example.com  \n\n  https://hook2.example.com  \n';
-    expect(parseUrls(input)).toEqual([
-      'https://hook1.example.com',
-      'https://hook2.example.com'
-    ]);
-  });
-
-  test('Empty string returns empty array', () => {
-    expect(parseUrls('')).toEqual([]);
-  });
-});
+import {validateStatus, isValidCondition} from '../src/utils';
 
 describe('validateStatus', () => {
   test('Valid statuses', () => {

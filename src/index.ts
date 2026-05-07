@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from './github';
-import {validateStatus, isValidCondition, parseUrls} from './utils';
+import {validateStatus, isValidCondition} from './utils';
 import {Slack} from './slack';
 
 async function run() {
@@ -9,8 +9,7 @@ async function run() {
   );
   const jobName = core.getInput('job_name', {required: true});
   const url = process.env.SLACK_WEBHOOK || core.getInput('url');
-  const urlsInput = core.getInput('urls');
-  const webhookUrls = urlsInput ? parseUrls(urlsInput) : [];
+  const webhookUrls = core.getMultilineInput('urls');
   if (webhookUrls.length > 0 && url) {
     core.warning('"urls" takes precedence over "url"');
   } else if (url) {

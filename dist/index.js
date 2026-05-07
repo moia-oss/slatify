@@ -40298,8 +40298,7 @@ function run() {
         const status = (0, utils_1.validateStatus)(core.getInput('type', { required: true }).toLowerCase());
         const jobName = core.getInput('job_name', { required: true });
         const url = process.env.SLACK_WEBHOOK || core.getInput('url');
-        const urlsInput = core.getInput('urls');
-        const webhookUrls = urlsInput ? (0, utils_1.parseUrls)(urlsInput) : [];
+        const webhookUrls = core.getMultilineInput('urls');
         if (webhookUrls.length > 0 && url) {
             core.warning('"urls" takes precedence over "url"');
         }
@@ -40594,7 +40593,6 @@ exports.Slack = Slack;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.validateStatus = validateStatus;
 exports.isValidCondition = isValidCondition;
-exports.parseUrls = parseUrls;
 const jobStatuses = ['success', 'failure', 'cancelled'];
 const metionConditions = [...jobStatuses, 'always'];
 function isValid(target, validList) {
@@ -40613,12 +40611,6 @@ function validateStatus(jobStatus) {
 }
 function isValidCondition(condition) {
     return isValid(condition, metionConditions);
-}
-function parseUrls(input) {
-    return input
-        .split('\n')
-        .map(url => url.trim())
-        .filter(url => url.length > 0);
 }
 
 
