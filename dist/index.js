@@ -40298,6 +40298,13 @@ function run() {
         const status = (0, utils_1.validateStatus)(core.getInput('type', { required: true }).toLowerCase());
         const jobName = core.getInput('job_name', { required: true });
         const url = process.env.SLACK_WEBHOOK || core.getInput('url');
+        const webhookUrls = core.getMultilineInput('urls');
+        if (webhookUrls.length > 0 && url) {
+            core.warning('"urls" takes precedence over "url"');
+        }
+        else if (url) {
+            webhookUrls.push(url);
+        }
         const slackBotToken = process.env.SLACK_BOT_TOKEN || core.getInput('slack_bot_token');
         let mention = core.getInput('mention');
         let mentionCondition = core.getInput('mention_if').toLowerCase();
@@ -40313,10 +40320,10 @@ function run() {
       mention_if: ${mentionCondition} is invalid
       `);
         }
-        if (!url && !slackBotToken) {
+        if (webhookUrls.length === 0 && !slackBotToken) {
             throw new Error(`Missing Slack Incoming Webhooks URL or Slack Bot Token.
       To use incoming webhooks please configure "SLACK_WEBHOOK" as an environment variable or
-      specify the "url" key.
+      specify the "url" or "urls" key.
 
       To use web api please configure "SLACK_BOT_TOKEN" as an environment variable or
       specify the "slack_bot_token" key.
@@ -40326,11 +40333,11 @@ function run() {
         if (commitFlag) {
             commit = yield github.getCommit(token);
         }
-        if (url) {
+        if (webhookUrls.length > 0) {
             const payload = slack_1.Slack.generateWebhookPayload(jobName, status, mention, mentionCondition, commit);
-            core.debug(`Generated payload for slack webhook: ${JSON.stringify(payload)}`);
-            yield slack_1.Slack.notifyWebhook(url, username, channel, icon_emoji, payload);
-            core.info('Post message to Slack Webhook');
+            core.debug(`Generated payload for slack webhook(s): ${JSON.stringify(payload)}`);
+            yield slack_1.Slack.notifyMultipleWebhooks(webhookUrls, username, channel, icon_emoji, payload);
+            core.info(`Posted message to ${webhookUrls.length} Slack webhook(s)`);
         }
         else if (slackBotToken) {
             const payload = slack_1.Slack.generateApiPayload(username, channel, icon_emoji, jobName, status, mention, mentionCondition, commit);
@@ -40536,6 +40543,22 @@ class Slack {
                     core.error(err.message);
                 }
                 throw new Error('Failed to post message to Slack');
+            }
+        });
+    }
+    static notifyMultipleWebhooks(urls, username, channel, icon_emoji, payload) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const results = yield Promise.allSettled(urls.map(url => Slack.notifyWebhook(url, username, channel, icon_emoji, payload)));
+            const failures = [];
+            results.forEach((r, index) => {
+                var _a;
+                if (r.status === 'rejected') {
+                    failures.push({ index, reason: r.reason });
+                    core.error(`Webhook ${index + 1}/${urls.length} delivery failed: ${((_a = r.reason) === null || _a === void 0 ? void 0 : _a.message) || String(r.reason)}`);
+                }
+            });
+            if (failures.length > 0) {
+                throw new Error(`Failed to post message to ${failures.length} of ${urls.length} Slack webhook(s)`);
             }
         });
     }

@@ -26,6 +26,9 @@ inputs:
   url:
     description: 'slack incoming webhook url'
     required: false
+  urls:
+    description: 'slack incoming webhook urls (newline-separated). Takes precedence over "url".'
+    required: false
   commit:
     description: 'whether include commit data or not (true or false)'
     required: false

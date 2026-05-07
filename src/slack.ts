@@ -175,6 +175,36 @@ export class Slack {
     }
   }
 
+  public static async notifyMultipleWebhooks(
+    urls: string[],
+    username: string,
+    channel: string,
+    icon_emoji: string,
+    payload: IncomingWebhookSendArguments
+  ): Promise<void> {
+    const results = await Promise.allSettled(
+      urls.map(url =>
+        Slack.notifyWebhook(url, username, channel, icon_emoji, payload)
+      )
+    );
+
+    const failures: {index: number; reason: unknown}[] = [];
+    results.forEach((r, index) => {
+      if (r.status === 'rejected') {
+        failures.push({index, reason: r.reason});
+        core.error(
+          `Webhook ${index + 1}/${urls.length} delivery failed: ${r.reason?.message || String(r.reason)}`
+        );
+      }
+    });
+
+    if (failures.length > 0) {
+      throw new Error(
+        `Failed to post message to ${failures.length} of ${urls.length} Slack webhook(s)`
+      );
+    }
+  }
+
   public static async notifyApi(
     token: string,
     payload: ChatPostMessageArguments
